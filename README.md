@@ -6,7 +6,7 @@ Drift is a multi-environment MongoDB migrations CLI tool for Node.js.
 ## Installation
 
 ```
-npm install mongo-drfit --save-dev
+npm install drift-mongo --save-dev
 ```
 
 ## Usage
