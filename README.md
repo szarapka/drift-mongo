@@ -5,7 +5,7 @@ Drift is a multi-environment MongoDB migrations CLI tool for Node.js.
 
 ## Installation
 
-```bash
+```
 npm install mongo-drfit --save-dev
 ```
 
@@ -13,7 +13,7 @@ npm install mongo-drfit --save-dev
 
 You can run `drift` or `drift --help` to see the CLI commands.
 
-```bash
+```
 Usage: drift [options] [command]
 
 A CLI for multi-environment MongoDB migrations with Node.js
@@ -38,7 +38,7 @@ Drift requries [Node 18](https://nodejs.org/en) (or higher) installed.
 
 In the root of the project you'd like to setup migrations for, initialize a new drift configuration.
 
-```bash
+```
 $ drift init
 
 Initializing drift config...
@@ -81,7 +81,7 @@ The `drift.json` file maintains your drift configuration for this project, with 
 
 You can add an environment using the CLI, or by editing the `drift.json` file.
 
-```bash
+```
 Usage: drift env [options] <env>
 
 Adds a new environment to use
@@ -92,7 +92,7 @@ Options:
 
 To add a production environment, you can use the following command:
 
-```bash
+```
 $ drift env prod
 
 Environment added: prod
@@ -103,16 +103,13 @@ Edit the environment at drift/drift.json
 Running this command added a new object to the `envs` object in the `drift.json` configuration file.
 
 ```json
-...
 "envs": {
-  {...},
   "prod": {
     "mongo_host": "mongodb://localhost:27017",
     "mongo_db": "platform",
     "mogno_collection": "migrations"
   }
 }
-...
 ```
 
 Edit `drift.json` to add your connection and DB details.
@@ -121,7 +118,7 @@ Edit `drift.json` to add your connection and DB details.
 
 Use the CLI to add a new migration to drift.
 
-```bash
+```
 Usage: drift create [options] <desc>
 
 Creates a new migration
@@ -132,7 +129,7 @@ Options:
 
 To add a (test) migration, you can use the following command:
 
-```bash
+```
 $ drift create test
 
 Creating migration: test
@@ -177,7 +174,7 @@ export const down = async (db, client) => {
 
 Run all pending migrations on a given environment. If no environment is specified, `dev` is configured as default.
 
-```bash
+```
 Usage: drift up [options]
 
 runs all pending migrations
@@ -189,7 +186,7 @@ Options:
 
 To run all pending migrations for the `dev` (default) environment use the following command:
 
-```bash
+```
 $ drift up
 
 Migrated: 1664591812475-test.js
@@ -204,7 +201,7 @@ Any error caught will stop the process.
 
 When you need to revert migrations for a given environment, migrating down will revert back through the completed migrations one at a time.
 
-```bash
+```
 Usage: drift down [options]
 
 rolls back the last migration
@@ -216,7 +213,7 @@ Options:
 
 To revert the last completed migration for the `dev` (default) environment use the following command:
 
-```bash
+```
 $ drift down
 
 Downgraded: 1664591812475-test.js
@@ -228,7 +225,7 @@ Rollback complete!
 
 Easily check the status of the migrations for a given environment.
 
-```bash
+```
 Usage: drift status [options]
 
 checks the status of migrations
