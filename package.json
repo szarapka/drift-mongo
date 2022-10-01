@@ -15,7 +15,7 @@
   "author": "Improper Industries",
   "license": "MIT",
   "keywords": [
-    "migrate mongo mongodb migrations database typescript"
+    "migrate", "mongo", "mongodb", "migrations", "database", "typescript"
   ],
   "repository": {
     "type": "git",
