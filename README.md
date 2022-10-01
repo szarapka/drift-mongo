@@ -45,7 +45,6 @@ Initializing drift config...
 
 Drift configuration generated.
 Use your favorite editor to edit the config file at drift/drift.json
-
 ```
 
 Running this command did two things:
@@ -97,7 +96,6 @@ $ drift env prod
 
 Environment added: prod
 Edit the environment at drift/drift.json
-
 ```
 
 Running this command added a new object to the `envs` object in the `drift.json` configuration file.
@@ -137,7 +135,6 @@ Creating migration: test
 Migration created!
 
 Edit the migration at drift/migrations/1664591812475-test.js
-
 ```
 
 Running this command added a new migration to the configured migrations folder (`migrations` by default).
@@ -192,7 +189,6 @@ $ drift up
 Migrated: 1664591812475-test.js
 
 Migrations complete!
-
 ```
 
 Any error caught will stop the process.
