@@ -191,6 +191,16 @@ Migrated: 1664591812475-test.js
 Migrations complete!
 ```
 
+To run all pending migrations for the `prod` environment, use the following command:
+
+```
+$ drift up --env prod
+
+Migrated: 1664591812475-test.js
+
+Migrations complete!
+```
+
 Any error caught will stop the process.
 
 ## Migrating down
@@ -215,6 +225,16 @@ $ drift down
 Downgraded: 1664591812475-test.js
 
 Rollback complete!
+```
+
+To rever the last completed migration for the `prod` environment, use the following command:
+
+```
+$ drift down --env prod
+
+Downgraded: 1664591812475-test.js
+
+Migrations complete!
 ```
 
 ## Migration status
