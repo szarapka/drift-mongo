@@ -5,9 +5,21 @@ Drift is a multi-environment MongoDB migrations CLI tool for Node.js.
 
 ## Installation
 
+#### Globally
+
+```
+npm install -g drift-mongo
+```
+
+When installed globally, you can use the `drift` command as needed.
+
+#### Individual project
+
 ```
 npm install drift-mongo --save-dev
 ```
+
+When installed in a project, you can use `npx drift` within the project folder structure.
 
 ## Usage
 

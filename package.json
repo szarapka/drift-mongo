@@ -1,6 +1,6 @@
 {
   "name": "drift-mongo",
-  "version": "1.1.1-test2",
+  "version": "1.1.2",
   "description": "Modern MongoDB migrations for Node.js",
   "main": "lib/drift.js",
   "bin": {
