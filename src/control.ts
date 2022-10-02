@@ -218,6 +218,9 @@ export default class Control {
 }
 
 function checkPath(pathToCheck: string) {
+  console.log(process.cwd())
+  console.log(pathToCheck)
   if (path.isAbsolute(pathToCheck)) return pathToCheck
+  console.log(path.join(process.cwd(), pathToCheck))
   return path.join(process.cwd(), pathToCheck)
 }
