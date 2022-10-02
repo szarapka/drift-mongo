@@ -29,8 +29,8 @@ export default class Control {
   DB?: Db
 
   constructor(env: string = "dev") {
-    this.CONFIG_PATH = checkPath(path.join(__dirname, "../drift", Control.DEFAULT_CONFIG))
-    this.MIGRATIONS_PATH = checkPath(path.join(__dirname, "../drift", this.FOLDER_NAME))
+    this.CONFIG_PATH = checkPath(path.join("./drift", Control.DEFAULT_CONFIG))
+    this.MIGRATIONS_PATH = checkPath(path.join("./drift", this.FOLDER_NAME))
     this.ENV = env
   }
 
@@ -43,9 +43,9 @@ export default class Control {
       process.exit(1)
     } catch (err) {
       console.log("Initializing drift config...", "\n")
-      const dir = checkPath(path.join(__dirname, "../drift", this.FOLDER_NAME))
+      const dir = checkPath(path.join("./drift", this.FOLDER_NAME))
       await fs.mkdir(dir, { recursive: true })
-      return await fs.writeFile(checkPath(path.join(__dirname, "../drift/", "drift.json")), JSON.stringify({
+      return await fs.writeFile(checkPath(path.join("./drift/", "drift.json")), JSON.stringify({
         migration_folder: this.FOLDER_NAME,
         envs: {
           dev: envTempalte
@@ -97,7 +97,7 @@ export default class Control {
     console.log("Creating migration:", desc, "\n")
 
     const filename = `${Date.now()}-${desc.split(" ").join("_")}.js`
-    const filepath = checkPath(path.join(__dirname, "../drift", this.FOLDER_NAME, filename))
+    const filepath = checkPath(path.join("./drift", this.FOLDER_NAME, filename))
     const templatePath = checkPath(path.join(__dirname, "./templates", "migration.js"))
 
     try {
@@ -139,7 +139,7 @@ export default class Control {
 
     const migrateItem = async (item: any) => {
       try {
-        const migration = await import(checkPath(path.join(__dirname, "../drift", this.FOLDER_NAME, item[0])))
+        const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, item[0])))
         await migration.up(this.DB, this.Client)
       } catch (err) {
         throw new Error(`Could not run the migration: ${item[0]}`)
@@ -173,7 +173,7 @@ export default class Control {
 
     if (lastMigrated) {
       try {
-        const migration = await import(checkPath(path.join(__dirname, "../drift", this.FOLDER_NAME, lastMigrated[0])))
+        const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, lastMigrated[0])))
         await migration.down(this.DB, this.Client)
       } catch (err: any) {
         throw new Error(
@@ -213,14 +213,11 @@ export default class Control {
    * @returns {Promise} - The path to the migrations folder
    */
   static async checkForConfig(): Promise<any> {
-    return await fs.stat(checkPath(path.join(__dirname, "../drift", Control.DEFAULT_CONFIG)))
+    return await fs.stat(checkPath(path.join("./drift", Control.DEFAULT_CONFIG)))
   }
 }
 
 function checkPath(pathToCheck: string) {
-  console.log(process.cwd())
-  console.log(pathToCheck)
   if (path.isAbsolute(pathToCheck)) return pathToCheck
-  console.log(path.join(process.cwd(), pathToCheck))
   return path.join(process.cwd(), pathToCheck)
 }
