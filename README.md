@@ -77,7 +77,7 @@ The `drift.json` file maintains your drift configuration for this project, with 
     "dev": {
       "mongo_host": "mongodb://localhost:27017",
       "mongo_db": "platform",
-      "mogno_collection": "migrations"
+      "mongo_collection": "migrations"
     }
   }
 }

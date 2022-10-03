@@ -71,7 +71,7 @@ export default class Control {
       this.FOLDER_NAME = c.migration_folder
       this.MONGO_HOST = c.envs[this.ENV].mongo_host
       this.MONGO_DB = c.envs[this.ENV].mongo_db
-      this.MONGO_COLLECTION = c.envs[this.ENV].mogno_collection
+      this.MONGO_COLLECTION = c.envs[this.ENV].mongo_collection
       this.CONFIG = c
       return c
     } catch (err) {
