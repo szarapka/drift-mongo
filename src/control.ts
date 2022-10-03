@@ -142,6 +142,7 @@ export default class Control {
         const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, item[0])))
         await migration.up(this.DB, this.Client)
       } catch (err) {
+        console.error(err)
         throw new Error(`Could not run the migration: ${item[0]}`)
       }
 
