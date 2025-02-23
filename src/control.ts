@@ -184,7 +184,6 @@ export default class Control {
       try {
         const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, lastMigrated[0])))
         await migration.down(this.dbService!.getDB(), this.dbService!.getClient())
-        spinner.succeed()
       } catch (err: any) {
         spinner.fail()
         throw new Error(
@@ -194,11 +193,11 @@ export default class Control {
       try {
         await collection.deleteOne({ filename: lastMigrated[0] })
         downgraded.push(lastMigrated[0])
-        spinner.succeed()
       } catch (err: any) {
         spinner.fail()
         throw new Error(`Could not update migration log: ${err.message}`)
       }
+      spinner.succeed()
     }
 
     await this.dbService!.close()
