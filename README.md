@@ -46,7 +46,7 @@ Commands:
 
 ## Initialization
 
-Drift requries [Node 18](https://nodejs.org/en) (or higher) installed.
+Drift requries [Node 22](https://nodejs.org/en) (or higher) installed.
 
 In the root of the project you'd like to setup migrations for, initialize a new drift configuration.
 
@@ -86,7 +86,7 @@ The `drift.json` file maintains your drift configuration for this project, with 
 - `migration_folder`: Lets you change the name/path of the migrations folder.
 - `envs`: Holds a environment config object for each configured environment.
 
-**Note:** You should add the `drift.json` file to your `.gitignore`.
+**Note:** Add the `drift.json` file to your `.gitignore`.
 
 ## Adding Environments
 

@@ -1,12 +1,17 @@
-import pkg from "../package.json" assert { type: "json" }
 import { Command } from "commander"
 import Control from "./control.js"
 import table from "cli-table3"
 import colors from "colors"
+import ora from "ora"
+
+const pkg = await import('../package.json', {
+  with: { type: 'json' }
+})
 
 const program = new Command()
 
-function handleError(err: any) {
+function handleError(err: any, spinner?: any) {
+  if (spinner) spinner.fail()
   console.error(err)
   process.exit(1)
 }
@@ -25,7 +30,7 @@ export default () => {
   program
     .name("drift")
     .description("A CLI for multi-environment MongoDB migrations with Node.js")
-    .version(pkg.version)
+    .version(pkg.default.version)
 
   program.command("init")
     .description("initializes drift config")
@@ -90,28 +95,28 @@ export default () => {
     .description("runs all pending migrations")
     .option("-e --env <environment>", "environment to run migrations for (default: dev)", "dev")
     .action(async (options) => {
+      const spinner = ora('Running migrations...').start()
       const control = new Control(options.env)
       await control.loadConfig()
       control.up()
         .then(() => {
-          console.log("")
-          console.log(colors.green.underline("Migrations complete!"), "\n")
+          spinner.succeed('Migrations complete!')
         })
-        .catch(handleError)
+        .catch((err) => handleError(err, spinner))
     })
 
   program.command("down")
     .description("rolls back the last migration")
     .option("-e --env <environment>", "environment to run migrations for (default: dev)", "dev")
     .action(async (options) => {
+      const spinner = ora('Rolling back migrations...').start()
       const control = new Control(options.env)
       await control.loadConfig()
       control.down()
         .then(() => {
-          console.log("")
-          console.log(colors.green.underline("Rollback complete!"), "\n")
+          spinner.succeed('Rollback complete!')
         })
-        .catch(handleError)
+        .catch((err) => handleError(err, spinner))
     })
 
   program.parse()
