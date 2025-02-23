@@ -157,7 +157,7 @@ export default class Control {
             on: new Date()
           })
 
-          spinner.succeed(`Migrated: ${item[0]}`)
+          spinner.succeed()
           migrated.push(item[0])
         } catch (error) {
           spinner.fail()
@@ -197,7 +197,7 @@ export default class Control {
         await collection.deleteOne({ filename: lastMigrated[0] })
         downgraded.push(lastMigrated[0])
         console.log("")
-        spinner.succeed(`Downgraded: ${lastMigrated[0]}`)
+        spinner.succeed()
       } catch (err: any) {
         spinner.fail()
         throw new Error(`Could not update migration log: ${err.message}`)
