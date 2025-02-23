@@ -143,8 +143,6 @@ export default class Control {
       const collection = this.dbService!.getCollection<Migration>(this.CONFIG!.envs[this.ENV].mongo_collection)
       const migrated: string[] = []
 
-      console.log('')
-
       const migrateItem = async (item: [string, string, string]) => {
         const spinner = ora(`Migrating: ${item[0]}`).start()
         try {
@@ -196,7 +194,6 @@ export default class Control {
       try {
         await collection.deleteOne({ filename: lastMigrated[0] })
         downgraded.push(lastMigrated[0])
-        console.log("")
         spinner.succeed()
       } catch (err: any) {
         spinner.fail()
