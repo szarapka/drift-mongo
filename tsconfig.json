@@ -8,9 +8,10 @@
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "resolveJsonModule": false,
+    "resolveJsonModule": true,
     "lib": ["ESNext"],
-    "types": ["node"],
     "typeRoots": ["types/index.d.ts"]
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "tests", "lib"]
 }

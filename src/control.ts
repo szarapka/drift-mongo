@@ -1,5 +1,5 @@
+import MongoDBService, { type DatabaseService } from "./mongo.js"
 import envTempalte from "./templates/environment.js"
-import { MongoClient, Db } from "mongodb"
 import { fileURLToPath } from "node:url"
 import * as fs from "node:fs/promises"
 import ps from "p-each-series"
@@ -9,6 +9,17 @@ import path from "node:path"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+interface DriftConfig {
+  migration_folder: string
+  envs: Record<string, EnvironmentConfig>
+}
+
+interface EnvironmentConfig {
+  mongo_host: string
+  mongo_db: string
+  mongo_collection: string
+}
+
 interface Migration {
   filename: string
   status: string
@@ -16,22 +27,16 @@ interface Migration {
 }
 
 export default class Control {
-  static DEFAULT_CONFIG: string = "drift.json"
-  FOLDER_NAME: string = "migrations"
-  CONFIG_PATH: string
-  MIGRATIONS_PATH: string
-  MONGO_HOST: string = ""
-  MONGO_DB: string = ""
-  MONGO_COLLECTION: string = ""
-  ENV: string
-  CONFIG?: any
-  Client?: MongoClient
-  DB?: Db
+  static readonly DEFAULT_CONFIG = "drift.json" as const
+  private FOLDER_NAME = "migrations" as const
+  private readonly CONFIG_PATH: string
+  private readonly MIGRATIONS_PATH: string
+  private CONFIG?: DriftConfig
+  private dbService?: DatabaseService
 
-  constructor(env: string = "dev") {
+  constructor(private readonly ENV: string = "dev") {
     this.CONFIG_PATH = checkPath(path.join("./drift", Control.DEFAULT_CONFIG))
     this.MIGRATIONS_PATH = checkPath(path.join("./drift", this.FOLDER_NAME))
-    this.ENV = env
   }
 
   async initDrift() {
@@ -68,11 +73,13 @@ export default class Control {
         console.log("Please add the environment to the drift config", "\n")
         process.exit(1)
       }
-      this.FOLDER_NAME = c.migration_folder
-      this.MONGO_HOST = c.envs[this.ENV].mongo_host
-      this.MONGO_DB = c.envs[this.ENV].mongo_db
-      this.MONGO_COLLECTION = c.envs[this.ENV].mongo_collection
       this.CONFIG = c
+      this.FOLDER_NAME = c.migration_folder
+
+      this.dbService = new MongoDBService(
+        c.envs[this.ENV].mongo_host,
+        c.envs[this.ENV].mongo_db
+      )
       return c
     } catch (err) {
       throw new Error(`Could not find drift config at ${this.CONFIG_PATH}`)
@@ -84,6 +91,9 @@ export default class Control {
    * @param env - The environment to create the config for
    */
   async addEnv(env: string) {
+    if (!this.CONFIG) {
+      throw new Error("Drift config not found")
+    }
     this.CONFIG.envs[env] = envTempalte
     try {
       await fs.writeFile(checkPath(this.CONFIG_PATH), JSON.stringify(this.CONFIG, null, 2))
@@ -108,74 +118,70 @@ export default class Control {
     }
   }
 
-  async getMigrationStatus(persist:boolean = false) {
-    await this.connect()
-    const collection = this.DB!.collection<Migration>(this.MONGO_COLLECTION)
+  async getMigrationStatus(persist:boolean = false): Promise<[string, string, string][]> {
+    await this.dbService!.connect()
+    const collection = this.dbService!.getCollection<Migration>(this.CONFIG!.envs[this.ENV].mongo_collection)
     const migrations = await collection.find().toArray()
     const files = await fs.readdir(checkPath(this.MIGRATIONS_PATH))
-    const statusMap = files.map((fileName) => {
+
+    const statusMap = files.map((fileName): [string, string, string] => {
       const migration = migrations.find((m) => m.filename === fileName)
-      let status, on
-      if (migration) {
-        status = migration.status
-        on = new Date(migration.on).toLocaleString()
-      } else {
-        status = "pending",
-        on = "n/a"
-      }
-      return [ fileName, status, on ]
+      const status = migration?.status ?? "pending"
+      const on = migration ? new Date(migration.on).toLocaleString() : "n/a"
+      return [fileName, status, on]
     })
-    if (!persist) await this.Client?.close()
-    return Promise.resolve(statusMap)
+
+    if (!persist) await this.dbService!.close()
+    return statusMap
   }
 
-  async up() {
-    const migrationItems = await this.getMigrationStatus(true)
-    const pendingMigrations = migrationItems.filter((m) => m[1] === "pending")
-    const collection = this.DB!.collection(this.MONGO_COLLECTION)
-    const migrated:any = []
+  async up(): Promise<string[]> {
+    try {
+      const migrationItems = await this.getMigrationStatus(true)
+      const pendingMigrations = migrationItems.filter((m) => m[1] === "pending")
+      const collection = this.dbService!.getCollection<Migration>(this.CONFIG!.envs[this.ENV].mongo_collection)
+      const migrated: string[] = []
 
-    console.log("")
+      console.log('')
 
-    const migrateItem = async (item: any) => {
-      try {
-        const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, item[0])))
-        await migration.up(this.DB, this.Client)
-      } catch (err) {
-        console.error(err)
-        throw new Error(`Could not run the migration: ${item[0]}`)
+      const migrateItem = async (item: [string, string, string]) => {
+        try {
+          const migration = await import(path.join(this.MIGRATIONS_PATH, item[0]))
+          await migration.up(this.dbService!.getDB(), this.dbService!.getClient())
+
+          await collection.insertOne({
+            filename: item[0],
+            status: "migrated",
+            on: new Date()
+          })
+
+          console.log(`Migrated: ${item[0]}`)
+          migrated.push(item[0])
+        } catch (error) {
+          throw error instanceof Error
+            ? error
+            : new Error(`Unknown error during migration: ${item[0]}`)
+        }
       }
 
-      try {
-        await collection.insertOne({
-          filename: item[0],
-          status: "migrated",
-          on: new Date()
-        })
-      } catch(err: any) {
-        throw new Error(`Could not update migration log: ${err.message}`)
-      }
-
-      console.log(`Migrated: ${item[0]}`)
-      migrated.push(item.fileName)
+      await ps(pendingMigrations, migrateItem)
+      return migrated
+    } finally {
+      await this.dbService!.close()
     }
-
-    await ps(pendingMigrations, migrateItem)
-    await this.Client?.close()
-    return migrated
   }
 
-  async down() {
+  async down(): Promise<string[]> {
     const migrationItems = await this.getMigrationStatus(true)
     const completedMigrations = migrationItems.filter((m) => m[1] !== "pending")
     const lastMigrated = completedMigrations.at(-1)
-    const collection = this.DB!.collection(this.MONGO_COLLECTION)
+    const collection = this.dbService!.getCollection<Migration>(this.CONFIG!.envs[this.ENV].mongo_collection)
     const downgraded = []
 
     if (lastMigrated) {
       try {
         const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, lastMigrated[0])))
-        await migration.down(this.DB, this.Client)
+        await migration.down(this.dbService!.getDB(), this.dbService!.getClient())
       } catch (err: any) {
         throw new Error(
           `Could not downgrade migration ${lastMigrated[0]}: ${err.message}`
@@ -191,22 +197,8 @@ export default class Control {
       }
     }
 
-    await this.Client?.close()
+    await this.dbService!.close()
     return downgraded
-  }
-
-  /**
-   * Connects to the configured MongoDB instance
-   */
-  private async connect() {
-    this.Client = new MongoClient(this.MONGO_HOST)
-    try {
-      await this.Client.connect()
-      this.DB = this.Client.db(this.MONGO_DB)
-    } catch (err) {
-      console.error(err)
-      process.exit(1)
-    }
   }
 
   /**
@@ -218,7 +210,13 @@ export default class Control {
   }
 }
 
-function checkPath(pathToCheck: string) {
-  if (path.isAbsolute(pathToCheck)) return pathToCheck
-  return path.join(process.cwd(), pathToCheck)
+/**
+ * Checks if the path is absolute and if not, joins it with the current working directory
+ * @param pathToCheck - The path to check
+ * @returns The path to the migrations folder
+ */
+function checkPath(pathToCheck: string): string {
+  return path.isAbsolute(pathToCheck)
+    ? pathToCheck
+    : path.join(process.cwd(), pathToCheck)
 }

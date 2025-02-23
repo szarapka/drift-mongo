@@ -1,1 +1,4 @@
-declare module "*.json"
+declare module "*.json" {
+  const value: { version: string }
+  export default value
+}
