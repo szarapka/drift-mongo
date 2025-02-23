@@ -5,6 +5,7 @@ import * as fs from "node:fs/promises"
 import ps from "p-each-series"
 import colors from "colors"
 import path from "node:path"
+import ora from "ora"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -145,6 +146,7 @@ export default class Control {
       console.log('')
 
       const migrateItem = async (item: [string, string, string]) => {
+        const spinner = ora(`Migrating: ${item[0]}`).start()
         try {
           const migration = await import(path.join(this.MIGRATIONS_PATH, item[0]))
           await migration.up(this.dbService!.getDB(), this.dbService!.getClient())
@@ -155,9 +157,10 @@ export default class Control {
             on: new Date()
           })
 
-          console.log(`Migrated: ${item[0]}`)
+          spinner.succeed(`Migrated: ${item[0]}`)
           migrated.push(item[0])
         } catch (error) {
+          spinner.fail()
           throw error instanceof Error
             ? error
             : new Error(`Unknown error during migration: ${item[0]}`)
@@ -179,10 +182,13 @@ export default class Control {
     const downgraded = []
 
     if (lastMigrated) {
+      const spinner = ora(`Downgrading: ${lastMigrated[0]}`).start()
       try {
         const migration = await import(checkPath(path.join("./drift", this.FOLDER_NAME, lastMigrated[0])))
         await migration.down(this.dbService!.getDB(), this.dbService!.getClient())
+        spinner.succeed()
       } catch (err: any) {
+        spinner.fail()
         throw new Error(
           `Could not downgrade migration ${lastMigrated[0]}: ${err.message}`
         )
@@ -191,8 +197,9 @@ export default class Control {
         await collection.deleteOne({ filename: lastMigrated[0] })
         downgraded.push(lastMigrated[0])
         console.log("")
-        console.log(`Downgraded: ${lastMigrated[0]}`)
+        spinner.succeed(`Downgraded: ${lastMigrated[0]}`)
       } catch (err: any) {
+        spinner.fail()
         throw new Error(`Could not update migration log: ${err.message}`)
       }
     }

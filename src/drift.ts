@@ -2,7 +2,6 @@ import { Command } from "commander"
 import Control from "./control.js"
 import table from "cli-table3"
 import colors from "colors"
-import ora from "ora"
 
 const pkg = await import('../package.json', {
   with: { type: 'json' }
@@ -10,8 +9,7 @@ const pkg = await import('../package.json', {
 
 const program = new Command()
 
-function handleError(err: any, spinner?: any) {
-  if (spinner) spinner.fail()
+function handleError(err: any) {
   console.error(err)
   process.exit(1)
 }
@@ -95,28 +93,28 @@ export default () => {
     .description("runs all pending migrations")
     .option("-e --env <environment>", "environment to run migrations for (default: dev)", "dev")
     .action(async (options) => {
-      const spinner = ora('Running migrations...').start()
+      console.log('Starting migrations...')
       const control = new Control(options.env)
       await control.loadConfig()
       control.up()
         .then(() => {
-          spinner.succeed('Migrations complete!')
+          console.log('Migrations complete!')
         })
-        .catch((err) => handleError(err, spinner))
+        .catch((err) => handleError(err))
     })
 
   program.command("down")
     .description("rolls back the last migration")
     .option("-e --env <environment>", "environment to run migrations for (default: dev)", "dev")
     .action(async (options) => {
-      const spinner = ora('Rolling back migrations...').start()
+      console.log('Rolling back migrations...')
       const control = new Control(options.env)
       await control.loadConfig()
       control.down()
         .then(() => {
-          spinner.succeed('Rollback complete!')
+          console.log('Rollback complete!')
         })
-        .catch((err) => handleError(err, spinner))
+        .catch((err) => handleError(err))
     })
 
   program.parse()
