@@ -1,7 +1,7 @@
 Drift
 =====
 
-Drift is a multi-environment MongoDB migrations CLI tool for Node.js.
+Drift is a simple multi-environment MongoDB migrations CLI tool for Node.js.
 
 ## Installation
 
@@ -75,7 +75,7 @@ The `drift.json` file maintains your drift configuration for this project, with 
   "migration_folder": "migrations",
   "envs": {
     "dev": {
-      "mongo_host": "mongodb://localhost:27017",
+      "mongo_host": "mongodb+srv://user:pass@localhost:27017",
       "mongo_db": "platform",
       "mongo_collection": "migrations"
     }
@@ -86,7 +86,13 @@ The `drift.json` file maintains your drift configuration for this project, with 
 - `migration_folder`: Lets you change the name/path of the migrations folder.
 - `envs`: Holds a environment config object for each configured environment.
 
-**Note:** Add the `drift.json` file to your `.gitignore`.
+Individual environment configurations have three config properties:
+
+- `mongo_host`: The URI to the MongoDB cluster for the given environment.
+- `mongo_db`: The name of the database you want to run migrations on for the given environment.
+- `mongo_collection`: The name of a collection you want to create/use to track migrations for the given environment.
+
+**Important:** Add the `drift.json` file to your `.gitignore`.
 
 ## Adding Environments
 
@@ -115,7 +121,7 @@ Running this command added a new object to the `envs` object in the `drift.json`
 ```json
 "envs": {
   "prod": {
-    "mongo_host": "mongodb://localhost:27017",
+    "mongo_host": "mongodb+srv://user:pass@localhost:27017",
     "mongo_db": "platform",
     "mogno_collection": "migrations"
   }

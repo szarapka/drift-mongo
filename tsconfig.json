@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "lib": ["ESNext"],
-    "typeRoots": ["types/index.d.ts"]
+    "typeRoots": ["node_modules/@types", "types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "tests", "lib"]
