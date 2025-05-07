@@ -1,6 +1,6 @@
 {
   "name": "drift-mongo",
-  "version": "1.1.12",
+  "version": "1.2.0",
   "description": "Multi-environment MongoDB migrations for Node.js",
   "main": "lib/drift.js",
   "bin": {
@@ -16,7 +16,12 @@
   "author": "Scott Szarapka <scott@szarapka.com>",
   "license": "MIT",
   "keywords": [
-    "migrate", "mongo", "mongodb", "migrations", "database", "typescript"
+    "migrate",
+    "mongo",
+    "mongodb",
+    "migrations",
+    "database",
+    "typescript"
   ],
   "repository": {
     "type": "git",
